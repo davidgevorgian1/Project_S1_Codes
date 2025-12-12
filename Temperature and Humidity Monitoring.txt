@@ -1,0 +1,59 @@
+#include <Wire.h>
+#include "Adafruit_SHT31.h"
+
+Adafruit_SHT31 sht31 = Adafruit_SHT31();
+
+#define RED_PIN   D1
+#define GREEN_PIN D2
+#define BLUE_PIN  D3
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(RED_PIN, OUTPUT);
+  pinMode(GREEN_PIN, OUTPUT);
+  pinMode(BLUE_PIN, OUTPUT);
+
+  // turn off at start
+  digitalWrite(RED_PIN, LOW);
+  digitalWrite(GREEN_PIN, LOW);
+  digitalWrite(BLUE_PIN, LOW);
+
+  if (!sht31.begin(0x44)) {
+    Serial.println("SHT31 sensor not found");
+    while (1) delay(10);
+  }
+}
+
+void setColor(bool r, bool g, bool b) {
+  digitalWrite(RED_PIN, r ? HIGH : LOW);
+  digitalWrite(GREEN_PIN, g ? HIGH : LOW);
+  digitalWrite(BLUE_PIN, b ? HIGH : LOW);
+}
+
+void loop() {
+  float t = sht31.readTemperature();
+  float h = sht31.readHumidity();
+
+  Serial.print("Temp: ");
+  Serial.print(t);
+  Serial.print(" °C | Humidity: ");
+  Serial.print(h);
+  Serial.println(" %");
+
+  // Temperature → LED color
+  if (t < 23) {
+    setColor(false, false, true);   
+  } 
+  else if (t < 25) {
+    setColor(false, true, false);   
+  }
+  else if (t < 28) {
+    setColor(true, true, false);    
+  }
+  else {
+    setColor(true, false, false);   
+  }
+
+  delay(1000);
+}
